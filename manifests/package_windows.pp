@@ -20,7 +20,7 @@ class qualys_agent::package_windows {
     package { 'qualys_agent':
       ensure   => $ensure,
       source   => "c:/Windows/Temp/${qualys_agent::package_filename_final}",
-      install_options => "CustomerId={${qualys_agent::customer_id}} ActivationId={${qualys_agent::activation_id}}",
+      install_options => [ "CustomerId={${qualys_agent::customer_id}} ActivationId={${qualys_agent::activation_id}}" ],
       name     => $qualys_agent::package_name,
     }
 
