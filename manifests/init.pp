@@ -172,59 +172,73 @@ class qualys_agent (
   Optional[String] $proxy
 ) {
 
-  # Protect against an bad setting for filesystem paths
-  if $qualys_agent::agent_user_homedir == '/' {
-    fail('agent_user_homedir is set to /.  Installation cannot continue.')
-  }
-  if $qualys_agent::conf_dir == '/' {
-    fail('conf_dir is set to /.  Installation cannot continue.')
-  }
-  if $qualys_agent::hostid_path == '/' {
-    fail('hostid_path is set to /.  Installation cannot continue.')
-  }
-  if $qualys_agent::hostid_search_dir == '/' {
-    fail('hostid_search_dir is set to /.  Installation cannot continue.')
-  }
-  if $qualys_agent::log_file_dir == '/' {
-    fail('log_file_dir is set to /.  Installation cannot continue.')
-  }
-
-  if $qualys_agent::agent_group {
-    $group = $qualys_agent::agent_group
-  } else {
-    $group = 'root'
-  }
-
-  if $qualys_agent::agent_user {
-    $owner = $qualys_agent::agent_user
-  } else {
-    $owner = 'root'
-  }
-
-  if $qualys_agent::log_group {
-    $log_group_final = $qualys_agent::log_group
-  } else {
-    $log_group_final = $group
-  }
-
-  if $qualys_agent::log_owner {
-    $log_owner_final = $qualys_agent::log_owner
-  } else {
-    $log_owner_final = $owner
-  }
-
   if $qualys_agent::package_filename {
     $package_filename_final = $qualys_agent::package_filename
   }
   else {
     $package_filename_final = $facts['osfamily'] ? {
-      'RedHat' => 'qualys-cloud-agent.x86_64.rpm',
-      default => 'qualys-cloud-agent.x86_64.deb'
+      'RedHat'  => 'qualys-cloud-agent.x86_64.rpm',
+      'Windows' => 'QualysCloudAgent.exe',
+      default   => 'qualys-cloud-agent.x86_64.deb'
     }
   }
 
-  contain 'qualys_agent::user'
-  contain 'qualys_agent::package'
-  contain 'qualys_agent::config'
-  contain 'qualys_agent::service'
+  case $::kernel {
+    'windows': {
+      contain 'qualys_agent::package_windows'
+
+    }
+    'linux': {
+
+      # Protect against an bad setting for filesystem paths
+      if $qualys_agent::agent_user_homedir == '/' {
+        fail('agent_user_homedir is set to /.  Installation cannot continue.')
+      }
+      if $qualys_agent::conf_dir == '/' {
+        fail('conf_dir is set to /.  Installation cannot continue.')
+      }
+      if $qualys_agent::hostid_path == '/' {
+        fail('hostid_path is set to /.  Installation cannot continue.')
+      }
+      if $qualys_agent::hostid_search_dir == '/' {
+        fail('hostid_search_dir is set to /.  Installation cannot continue.')
+      }
+      if $qualys_agent::log_file_dir == '/' {
+        fail('log_file_dir is set to /.  Installation cannot continue.')
+      }
+
+      if $qualys_agent::agent_group {
+        $group = $qualys_agent::agent_group
+      } else {
+        $group = 'root'
+      }
+
+      if $qualys_agent::agent_user {
+        $owner = $qualys_agent::agent_user
+      } else {
+        $owner = 'root'
+      }
+
+      if $qualys_agent::log_group {
+        $log_group_final = $qualys_agent::log_group
+      } else {
+        $log_group_final = $group
+      }
+
+      if $qualys_agent::log_owner {
+        $log_owner_final = $qualys_agent::log_owner
+      } else {
+        $log_owner_final = $owner
+      }
+
+      contain 'qualys_agent::user'
+      contain 'qualys_agent::package'
+      contain 'qualys_agent::config'
+      contain 'qualys_agent::service'
+    }
+    default: {
+      fail("Kernel: ${::kernel} not supported in ${module_name}")
+
+    }
+  }
 }
