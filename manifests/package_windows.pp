@@ -11,7 +11,7 @@ class qualys_agent::package_windows {
       absent  => 'absent',
     }
 
-    archive { "C:\Windows\Temp\$qualys_agent::package_filename_final":
+    archive { "C:/Windows/Temp/${qualys_agent::package_filename_final}":
       ensure       => present,
       source       => $qualys_agent::package_url,
       proxy_server => $qualys_agent::proxy,
@@ -19,7 +19,7 @@ class qualys_agent::package_windows {
 
     package { 'qualys_agent':
       ensure   => $ensure,
-      source   => "c:\Windows\Temp\${qualys_agent::package_filename_final}",
+      source   => "c:/Windows/Temp/${qualys_agent::package_filename_final}",
       install_options => "CustomerId={${qualys_agent::customer_id}} ActivationId={${qualys_agent::activation_id}}",
       name     => $qualys_agent::package_name,
     }
